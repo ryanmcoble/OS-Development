@@ -1,0 +1,28 @@
+ Commands
+
+
+
+# Assemble boot sector
+
+nasm boot_sector.asm -f bin -o boot_sector.bin && qemu-system-x86_64 boot_sector.bin
+
+
+
+# Compile kernel
+
+gcc -ffreestanding -c kernel.c -o kernel.o -m32 ; Compile c code into object file in 32 bit
+gobjdump -d kernel.o ; Disassemble object file
+gobjcopy -O binary kernel.o kernel.bin  ; Convert object file into raw 32 bit binary file
+
+
+
+# Compile os bin
+
+cat boot_sector.bin kernel.bin > os.bin ; Concatenate boot sector and kernel into os binary file
+truncate os.bin -s 10240 ; Truncate so that the file is longer enough (over 9) sectors
+qemu-system-x86_64 os.bin ; Pass the binary to load in qemu
+
+
+
+# All together
+clear; gcc -ffreestanding -c kernel.c -o kernel.o -m32 && gobjcopy -O binary kernel.o kernel.bin && nasm boot_sector.asm -f bin -o boot_sector.bin && cat boot_sector.bin kernel.bin > os.bin && truncate os.bin -s 10240 && qemu-system-x86_64 os.bin
